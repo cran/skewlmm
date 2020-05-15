@@ -1,12 +1,12 @@
 \name{errorVar}
 \alias{errorVar}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Return error variance associated with \code{times}
+\title{Error scale matrix associated with \code{times}
 %%  ~~function to do ... ~~
 }
 \description{
-  It returns a variance matrix associated with the error term at time \code{times}.
-  Can be applied to a smsn.lmm object or to a specific dependence structure with chosen parameter values.
+  It returns a scale matrix associated with the error term at time \code{times}.
+  Can be applied to a smn.lmm or smsn.lmm object or to a specific dependence structure with chosen parameter values.
 }
 \usage{
 errorVar(times, object = NULL, sigma2 = NULL, depStruct = NULL,
@@ -15,7 +15,7 @@ errorVar(times, object = NULL, sigma2 = NULL, depStruct = NULL,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{times}{A vector containing the times for which the matrix should be calculated.}
-  \item{object}{A smsn.lmm object for which the variance should be extracted.}
+  \item{object}{A smn.lmm or smsn.lmm object for which the variance should be extracted.}
   \item{sigma2}{Common variance parameter, such that \eqn{\Sigma = sigma2*R}. Only evaluated if object \code{is.null(object)}.}
   \item{depStruct}{Dependence structure. \code{"CI"} for condicional independence, \code{"ARp"} for AR(p) -- p is \code{length(phi)}--, \code{"CS"} for compound symmetry, \code{"DEC"} for DEC, and \code{"CAR1"} for  continuous-time AR(1). Only evaluated if object \code{is.null(object)}.}
   \item{phi}{Parameter vector indexing the dependence structure. Only evaluated if object \code{is.null(object)}.}
@@ -24,7 +24,7 @@ errorVar(times, object = NULL, sigma2 = NULL, depStruct = NULL,
   Matrix of dimension \code{length(times)}.
 }
 \references{
-Schumacher, F.L., Matos, L.A., and Lachos, V.H. (2020+) "Scale mixture of skew-normal linear mixed models with within-subject serial dependence". Submitted.
+Schumacher, F.L., Lachos, V.H., and Matos, L.A. (2020+) "Scale mixture of skew-normal linear mixed models with within-subject serial dependence". Submitted.
 Preprint available at \url{https://arxiv.org/abs/2002.01040}.
 }
 \author{
@@ -33,7 +33,7 @@ Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
 
 
 \seealso{
-\code{\link{smsn.lmm}}, \code{\link{summary.SMSN}}
+\code{\link{smsn.lmm}}, \code{\link{smn.lmm}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
@@ -47,4 +47,3 @@ Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{models}% use one of  RShowDoc("KEYWORDS")
-\keyword{robust}% __ONLY ONE__ keyword per line

@@ -10,9 +10,9 @@ It provides estimates and standard errors of parameters.
 \usage{
 smn.lmm(data, formFixed, groupVar, formRandom = ~1, depStruct = "CI",
     timeVar = NULL, distr = "norm", pAR = 1, luDEC = 10,
-    tol = 1e-06, max.iter = 200, calc.se = TRUE, calc.bi = TRUE, lb = NULL,
+    tol = 1e-06, max.iter = 200, calc.se = TRUE, lb = NULL,
     lu = NULL, initialValues = list(beta = NULL, sigma2 = NULL,
-        D = NULL, phi = NULL, nu = NULL), quiet = FALSE)
+        D = NULL, phi = NULL, nu = NULL), quiet = FALSE, showCriterium=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,11 +28,12 @@ smn.lmm(data, formFixed, groupVar, formRandom = ~1, depStruct = "CI",
   \item{tol}{Tolerance for the convergence criterion. Default=\code{1e-6}.}
   \item{max.iter}{Maximum number of iterations for the EM algorithm. Default=\code{200}.}
   \item{calc.se}{A logical value indicating if standard errors should be calculated.}
-  \item{calc.bi}{A logical value indicating if random effects should be estimated.}
   \item{lb}{Optional. Bottom limit for estimating \code{nu}.}
   \item{lu}{Optional. Upper limit for estimating \code{nu}.}
   \item{initialValues}{Optional. A named list containing initial parameter values, with at most the following elements: \code{beta}, \code{sigma2}, \code{D}, \code{phi}, \code{nu}.}
   \item{quiet}{A logical value indicating if the iteration message should be suppressed. Useful when calling the function in R Markdown.}
+  \item{showCriterium}{A logical value indicating if the criterium should be shown at each iteration.}
+
 }
 \details{
 It fits the model \eqn{Y_i = X_i \beta + Z_i b_i + \epsilon_i}, for \eqn{i=1,\dots,n}, where \eqn{Y_i} is a vector with \eqn{n_i} observed continuous responses, \eqn{b_i ~ SMN(0, D; H)} and \eqn{\epsilon_i ~ SMN(0, \Sigma_i; H)}, indexed by the same mixing distribution.
@@ -66,7 +67,7 @@ Specifically, the following components are returned:
 \references{
 Lachos, V. H., P. Ghosh, and R. B. Arellano-Valle (2010). Likelihood based inference for skew-normal independent linear mixed models. Statistica Sinica 20, 303-322.
 
-Schumacher, F.L., L.A. Matos, and V.H. Lachos (2020+). Scale mixture of skew-normal linear mixed models with within-subject serial dependence. Submitted.
+Schumacher, F.L., Lachos, V.H., and Matos, L.A. (2020+). Scale mixture of skew-normal linear mixed models with within-subject serial dependence. Submitted.
 Preprint available at \url{https://arxiv.org/abs/2002.01040}.
 }
 \author{
@@ -75,7 +76,7 @@ Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
 
 
 \seealso{
-\code{\link{print.SMN}}, \code{\link{summary.SMN}}, \code{\link{predict.SMN}}, \code{\link{smsn.lmm}}
+\code{\link{print.SMN}}, \code{\link{summary.SMN}}, \code{\link{predict.SMN}}, \code{\link{residuals.SMN}}, \code{\link{plot.SMN}}, \code{\link{smsn.lmm}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
@@ -84,12 +85,19 @@ Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
   fm1 <- smn.lmm(dat1,formFixed=distance ~ age,groupVar="Subject",max.iter = 30)
   fm1
 \donttest{#fitting for several distributions / dependence structures
-    fm1 <- smn.lmm(dat1,formFixed=distance ~ age+Sex,groupVar="Subject")
-    fm2 <- smn.lmm(dat1,formFixed=distance ~ age+Sex,groupVar="Subject", distr="t")
-    fm3 <- smn.lmm(dat1,formFixed=distance ~ age+Sex,groupVar="Subject", distr="sl")
-    fm4 <- smn.lmm(dat1,formFixed=distance ~ age+Sex,groupVar="Subject", depStruct="ARp",pAR=1)
-    rbind(fm1$criteria,fm2$criteria,fm3$criteria,fm4$criteria)
-    summary(fm3)
+  fm1 <- smn.lmm(dat1,formFixed=distance ~ age+Sex,groupVar="Subject")
+  fm2 <- smn.lmm(dat1,formFixed=distance ~ age+Sex,groupVar="Subject", distr="t")
+  fm3 <- smn.lmm(dat1,formFixed=distance ~ age+Sex,groupVar="Subject", distr="sl")
+  fm4 <- smn.lmm(dat1,formFixed=distance ~ age+Sex,groupVar="Subject", depStruct="ARp",pAR=1)
+  rbind(fm1$criteria,fm2$criteria,fm3$criteria,fm4$criteria)
+  summary(fm3)
+
+  #some diagnostic tools
+  plot(fm1)
+  acf1<- acfresid(fm1,calcCI=TRUE,MCiter=100)
+  plot(acf1)
+  plot(mahalDist(fm1),fm1,nlabels=2)
+  healy.plot(fm1)
   }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

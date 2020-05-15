@@ -1,22 +1,24 @@
-\name{print.SMN}
-\alias{print.SMN}
+\name{ranef}
+\alias{ranef}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Print a smn.lmm object
+\title{Extract random effects from smsn.lmm and smn.lmm objects
 %%  ~~function to do ... ~~
 }
 \description{
-Print a smn.lmm object.
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
-}
+  It extracts random effects from smsn.lmm and smn.lmm objects.}
+
 \usage{
-\method{print}{SMN}(x, \dots)
+ranef(object)
 }
 
 \arguments{
- \item{x}{an object inheriting from class \code{SMN}, representing
-   a fitted scale mixture normal linear mixed model.}
-  \item{\dots}{Additional print arguments.}
+ \item{object}{an object inheriting from class \code{SMSN}, representing
+   a fitted scale mixture skew-normal linear mixed model.}
    }
+
+\value{
+  Matrix of estimated random effects.
+}
 
 \references{
 Lachos, V. H., P. Ghosh, and R. B. Arellano-Valle (2010). Likelihood based inference for skew-normal independent linear mixed models. Statistica Sinica 20, 303-322.
@@ -30,12 +32,12 @@ Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
 
 
 \seealso{
-\code{\link{smn.lmm}}, \code{\link{summary.SMN}}
+\code{\link{smsn.lmm}}, \code{\link{smn.lmm}}, \code{\link{fitted.SMSN}}, \code{\link{fitted.SMN}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-  fm1 <- smn.lmm(distance ~ age + Sex, data = nlme::Orthodont, groupVar="Subject")
-  fm1
+  fm1 <- smsn.lmm(distance ~ age + Sex, data = nlme::Orthodont, groupVar="Subject",tol = .0001)
+  ranef(fm1)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

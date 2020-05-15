@@ -1,0 +1,53 @@
+\name{plot}
+\alias{plot.SMN}\alias{plot.SMSN}
+%- Also NEED an '\alias' for EACH other topic documented here.
+\title{Plot a smn.lmm or smsn.lmm object
+%%  ~~function to do ... ~~
+}
+\description{
+Fitted values versus residuals plot.
+}
+
+\usage{
+\method{plot}{SMN}(x,type="response",level="conditional",alpha=.3,\dots)
+
+\method{plot}{SMSN}(x,type="response",level="conditional",alpha=.3,\dots)
+}
+
+\arguments{
+ \item{x}{An object inheriting from class \code{SMN} or \code{SMSN}, representing
+   a fitted scale mixture of (skew) normal linear mixed model.}
+  \item{type}{Type of residual that should be used. For details see \code{\link{residuals.SMN}}. Default is "response", indicating raw residuals.}
+  \item{level}{Level of residual that should be used. For details see \code{\link{residuals.SMN}}. Default is "conditional".}
+  \item{alpha}{Transparency parameter to be used (\code{0<alpha<1}).}
+  \item{\dots}{Additional arguments.}
+   }
+
+\value{
+  A ggplot object.
+}
+
+\references{
+Schumacher, F.L., V.H. Lachos, and L.A. Matos (2020+). Scale mixture of skew-normal linear mixed models with within-subject serial dependence. Submitted.
+Preprint available at \url{https://arxiv.org/abs/2002.01040}.
+}
+\author{
+Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
+}
+
+
+\seealso{
+\code{\link{ggplot}}, \code{\link{smn.lmm}}, \code{\link{smsn.lmm}}, \code{\link{fitted.SMN}},
+\code{\link{fitted.SMSN}},\code{\link{residuals.SMN}}, \code{\link{residuals.SMSN}}
+}
+\examples{
+  fm1 <- smn.lmm(distance ~ age + Sex, data = nlme::Orthodont, groupVar="Subject")
+  plot(fm1)
+
+  \donttest{library(ggplot2)
+  plot(fm1) + ggtitle("N-LMM for orthodont data")
+  }
+}
+% Add one or more standard keywords, see file 'KEYWORDS' in the
+% R documentation directory.
+\keyword{hplot}% use one of  RShowDoc("KEYWORDS")
