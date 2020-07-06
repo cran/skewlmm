@@ -1,7 +1,7 @@
 Package: skewlmm
 Type: Package
 Title: Scale Mixture of Skew-Normal Linear Mixed Models
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: c(person("Fernanda L.", "Schumacher", role = c("aut", "cre"),
                      email = "fernandalschumacher@gmail.com"),
               person("Larissa A.", "Matos", role = "aut"),
@@ -12,13 +12,13 @@ License: MIT + file LICENSE
 Depends: R (>= 3.4.0)
 Encoding: UTF-8
 LazyData: true
-Imports: dplyr, ggplot2, moments, mvtnorm, nlme, numDeriv, purrr
+Imports: dplyr, ggplot2, moments, mvtnorm, nlme, numDeriv, purrr, rlist
 URL: https://github.com/fernandalschumacher/skewlmm
 BugReports: https://github.com/fernandalschumacher/skewlmm/issues
 NeedsCompilation: no
-Packaged: 2020-05-15 20:00:25 UTC; Fernanda
+Packaged: 2020-07-06 01:12:12 UTC; Fernanda
 Author: Fernanda L. Schumacher [aut, cre],
   Larissa A. Matos [aut],
   Victor H. Lachos [aut]
 Repository: CRAN
-Date/Publication: 2020-05-15 20:20:03 UTC
+Date/Publication: 2020-07-06 05:00:03 UTC
