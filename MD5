@@ -1,8 +1,8 @@
-dd54134c8b168f94f9a977b9b84e473c *DESCRIPTION
+d1cd5ee87ae314fdd2c845dc209ea382 *DESCRIPTION
 b5c355c5bb674d85415001ff8ca87ed2 *LICENSE
-1ee7a3f50795ac758d351acd08d4d28d *NAMESPACE
-010eb11094ea721938f51c677f0e4bc6 *R/auxfunctions-sim.R
-83a9d6f782e21c4be4a85c11d1379573 *R/auxfunctions.R
+28787c2aadc74e022f28e7c2d1fb8fed *NAMESPACE
+3a116b44120ce0ff347f0b622b6c89f8 *R/auxfunctions-sim.R
+06935caf6776c8e81dfedb025f45524b *R/auxfunctions.R
 cb07bd97b7a681e4790d4956c92292e1 *R/mainfunctions-sim.R
 0f5ab8b6cc185e279f977835ce64d2a4 *R/mainfunctions.R
 25083187fea1e606a6667a8ee2b07aac *R/residuals.R
@@ -29,6 +29,6 @@ e62dd4cf733435f5d2d768fdbe8ed524 *man/ranef.Rd
 ac6539104c3d65a90b19dabcd1dfe9c7 *man/residuals.Rd
 f4947b39f8fcde24b1e1e321721a0297 *man/rsmsn.lmm.Rd
 f40b6a0d91f7a0de22f0d47cf171faff *man/smn.lmm.Rd
-42658f5117eafcf7f6be2904b5de953f *man/smsn.lmm.Rd
+7f7b02e623b9af3b39c7f12912a475a8 *man/smsn.lmm.Rd
 512ea4a062b89d95c8688b4190e04c15 *man/summary.SMN.Rd
 ca872cb6579b5c28681b95ae6046239c *man/summary.SMSN.Rd
