@@ -1,5 +1,5 @@
 #main functions from skewlmm package - SMSN-LMM
-smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", timeVar=NULL,
+smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "UNC", timeVar=NULL,
                      distr="sn",pAR=1,luDEC=10,
                      tol=1e-6,max.iter=200,calc.se=TRUE,lb=NULL,lu=NULL,
                      initialValues =list(beta=NULL,sigma2=NULL,D=NULL,lambda=NULL,phi=NULL,nu=NULL),
@@ -14,9 +14,11 @@ smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", tim
   if (!is.null(timeVar)&!is.character(timeVar)) stop("timeVar must be a character containing the name of the time variable in data")
   if (length(formFixed)!=3) stop("formFixed must be a two-sided linear formula object")
   if (!is.data.frame(data)) stop("data must be a data.frame")
+  if (length(class(data))>1) data=as.data.frame(data)
   vars_used<-unique(c(all.vars(formFixed),all.vars(formRandom),groupVar,timeVar))
   vars_miss <- which(!(vars_used %in% names(data)))
   if (length(vars_miss)>0) stop(paste(vars_used[vars_miss],"not found in data"))
+  data = data[,vars_used]
   #
   if (!is.factor(data[,groupVar])) data[,groupVar]<-as.factor(data[,groupVar])
   x <- model.matrix(formFixed,data=data)
@@ -24,7 +26,7 @@ smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", tim
   z<-model.matrix(formRandom,data=data)
   ind <-data[,groupVar]
   data$ind <-data[,groupVar]
-  m<-n_distinct(ind)
+  m<-nlevels(ind)#n_distinct(ind)
   if (m<=1) stop(paste(groupVar,"must have more than 1 level"))
   p<-ncol(x)
   q1<-ncol(z)
@@ -39,7 +41,8 @@ smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", tim
   #
   if (depStruct=="ARp" & !is.null(timeVar) & ((sum(!is.wholenumber(data[,timeVar]))>0)|(sum(data[,timeVar]<=0)>0))) stop("timeVar must contain positive integer numbers when using ARp dependency")
   if (depStruct=="ARp" & !is.null(timeVar)) if (min(data[,timeVar])!=1) warning("consider using a transformation such that timeVar starts at 1")
-  if (!(depStruct %in% c("CI","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: CI, ARp, CS, DEC or CAR1")
+  if (depStruct=="CI") depStruct = "UNC"
+  if (!(depStruct %in% c("UNC","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: UNC, ARp, CS, DEC or CAR1")
   #
   if (is.null(initialValues$beta)|is.null(initialValues$sigma2)|is.null(initialValues$lambda)|is.null(initialValues$D)) {
     lmefit = try(lme(formFixed,random=formula(paste('~',as.character(formRandom)[length(formRandom)],
@@ -94,7 +97,7 @@ smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", tim
   if (distr=="ss"&length(nu)!=1) stop ("wrong dimension of nu")
   if (distr=="scn"&length(nu)!=2) stop ("wrong dimension of nu")
   ###
-  if (depStruct=="CI") obj.out <- EM.Skew(formFixed,formRandom,data,groupVar,distr,beta1,sigmae,D1,
+  if (depStruct=="UNC") obj.out <- EM.Skew(formFixed,formRandom,data,groupVar,distr,beta1,sigmae,D1,
                                           lambda,nu,lb,lu,precisao=tol,informa=calc.se,max.iter=max.iter,showiter=!quiet,showerroriter = (!quiet)&showCriterium)
   if (depStruct=="ARp") obj.out <- EM.SkewAR(formFixed,formRandom,data,groupVar,pAR,timeVar,
                                              distr,beta1,sigmae,phiAR,D1,lambda,nu,lb,lu,
@@ -198,8 +201,8 @@ summary.SMSN <- function(object,confint.level=.95,...){
     tab = (cbind(object$estimates$beta,object$std.error[1:p],
                       ICtab))
     rownames(tab) = names(object$theta[1:p])
-    colnames(tab) = c("Value","Std.error",paste0("IC ",confint.level*100,"% lower"),
-                      paste0("IC ",confint.level*100,"% upper"))
+    colnames(tab) = c("Value","Std.error",paste0("CI ",confint.level*100,"% lower"),
+                      paste0("CI ",confint.level*100,"% upper"))
   }
   else {
     tab = rbind(object$estimates$beta)
@@ -210,7 +213,7 @@ summary.SMSN <- function(object,confint.level=.95,...){
   cat("\nDependency structure:", object$depStruct)
   cat("\n  Estimate(s):\n")
   covParam <- c(object$estimates$sigma2, object$estimates$phi)
-  if (object$depStruct=="CI") names(covParam) <- "sigma2"
+  if (object$depStruct=="UNC") names(covParam) <- "sigma2"
   else names(covParam) <- c("sigma2",paste0("phi",1:(length(covParam)-1)))
   print(covParam)
   cat("\nSkewness parameter estimate:", object$estimates$lambda)
@@ -249,7 +252,7 @@ predict.SMSN <- function(object,newData,...){
   #
   if (object$distr=="ssl") object$distr<-"ss"
   #
-  if (depStruct=="CI") obj.out <- predictf.skew(formFixed,formRandom,dataFit,dataPred,groupVar,distr=object$distr,theta=object$theta)
+  if (depStruct=="UNC") obj.out <- predictf.skew(formFixed,formRandom,dataFit,dataPred,groupVar,distr=object$distr,theta=object$theta)
   if (depStruct=="ARp") obj.out <- predictf.skewAR(formFixed,formRandom,dataFit,dataPred,groupVar,timeVar,distr=object$distr,
                                                   pAR=length(object$estimates$phi),theta=object$theta)
   if (depStruct=="CS") obj.out <-predictf.skewCS(formFixed,formRandom,dataFit,dataPred,groupVar,distr=object$distr,theta=object$theta)
@@ -263,14 +266,15 @@ errorVar<- function(times,object=NULL,sigma2=NULL,depStruct=NULL,phi=NULL) {
   if (is.null(object)&is.null(depStruct)) stop("object or depStruct must be provided")
   if (is.null(object)&is.null(sigma2)) stop("object or sigma2 must be provided")
   if (is.null(depStruct)) depStruct<-object$depStruct
-  if (depStruct!="CI" & is.null(object)&is.null(phi)) stop("object or phi must be provided")
-  if (!(depStruct %in% c("CI","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: CI, ARp, CS, DEC or CAR1")
+  if (depStruct=="CI") depStruct = "UNC"
+  if (depStruct!="UNC" & is.null(object)&is.null(phi)) stop("object or phi must be provided")
+  if (!(depStruct %in% c("UNC","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: UNC, ARp, CS, DEC or CAR1")
   if (is.null(sigma2)) sigma2<-object$estimates$sigma2
-  if (is.null(phi)&depStruct!="CI") phi<-object$estimates$phi
+  if (is.null(phi)&depStruct!="UNC") phi<-object$estimates$phi
   if (depStruct=="ARp" & (any(!is.wholenumber(times))|any(times<=0))) stop("times must contain positive integer numbers when using ARp dependency")
   if (depStruct=="ARp" & any(tphitopi(phi)< -1|tphitopi(phi)>1)) stop("AR(p) non stationary, choose other phi")
   #
-  if (depStruct=="CI") var.out<- sigma2*diag(length(times))
+  if (depStruct=="UNC") var.out<- sigma2*diag(length(times))
   if (depStruct=="ARp") var.out<- sigma2*CovARp(phi,times)
   if (depStruct=="CS") var.out<- sigma2*CovCS(phi,length(times))
   if (depStruct=="DEC") var.out<- sigma2*CovDEC(phi[1],phi[2],times)
@@ -278,7 +282,7 @@ errorVar<- function(times,object=NULL,sigma2=NULL,depStruct=NULL,phi=NULL) {
   var.out
 }
 
-rsmsn.lmm <- function(time1,x1,z1,sigma2,D1,beta,lambda,depStruct="CI",phi=NULL,distr="sn",nu=NULL) {
+rsmsn.lmm <- function(time1,x1,z1,sigma2,D1,beta,lambda,depStruct="UNC",phi=NULL,distr="sn",nu=NULL) {
   if (length(D1)==1 & !is.matrix(D1)) D1=as.matrix(D1)
   q1 = nrow(D1)
   p = length(beta)
@@ -331,11 +335,23 @@ lr.test <- function(obj1,obj2,level=0.05,quiet=FALSE) {
     print(criteria)
     cat("\n")
   }
-  if (npar1==npar2) stop("obj1 and obj2 should contain nested models with different number of parameters")
+  if (npar1==npar2) {
+    warning("obj1 and obj2 do not contain nested models with different number of parameters")
+    return(invisible(NULL))
+  }
   if (npar1<npar2) {objB <- obj2;objS<-obj1} else {objB <- obj1;objS<-obj2}
-  if (!all(names(objS$theta)%in%names(objB$theta))) stop("obj1 and obj2 should contain nested models")
+  if (objB$depStruct=='DEC') {
+    names(objB$theta)[substr(names(objB$theta), 1, 3)=='phi'] = 'phi1'
+    names(objB$theta)[substr(names(objB$theta), 1, 5)=='theta'] = 'phi2'
+  }
+  if (objS$depStruct =="ARp" | objS$depStruct =="CAR1") names(objS$theta)[substr(names(objS$theta), 1, 3)=='phi'] = paste0('phi',1:length(objS$estimates$phi))
+  if (objB$depStruct =="ARp") names(objB$theta)[substr(names(objB$theta), 1, 3)=='phi'] = paste0('phi',1:length(objB$estimates$phi))
+  if (!all(names(objS$theta)%in%names(objB$theta))) {
+    warning("obj1 and obj2 do not contain nested models")
+    return(invisible(NULL))
+  }
   if ((objB$loglik-objS$loglik)<=0) {
-  stop("loglik from model with more parameters is not bigger than the one
+  stop("logLik from model with more parameters is not bigger than the one
   with less parameters. This probably indicates problems on convergence,
   try changing the initial values and/or maximum number of iteration")
   }

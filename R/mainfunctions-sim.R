@@ -1,5 +1,5 @@
 #main functions from skewlmm package - SMN-LMM
-smn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", timeVar=NULL,
+smn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "UNC", timeVar=NULL,
                     distr="norm",pAR=1,luDEC=10,
                     tol=1e-6,max.iter=200,calc.se=TRUE,lb=NULL,lu=NULL,
                     initialValues =list(beta=NULL,sigma2=NULL,D=NULL,phi=NULL,nu=NULL),
@@ -14,9 +14,12 @@ smn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", time
   if (!is.null(timeVar)&!is.character(timeVar)) stop("timeVar must be a character containing the name of the time variable in data")
   if (length(formFixed)!=3) stop("formFixed must be a two-sided linear formula object")
   if (!is.data.frame(data)) stop("data must be a data.frame")
+  #if (is_tibble(data)) data=as.data.frame(data)
+  if (length(class(data))>1) data=as.data.frame(data)
   vars_used<-unique(c(all.vars(formFixed),all.vars(formRandom),groupVar,timeVar))
   vars_miss <- which(!(vars_used %in% names(data)))
   if (length(vars_miss)>0) stop(paste(vars_used[vars_miss],"not found in data"))
+  data = data[,vars_used]
   #
   if (!is.factor(data[,groupVar])) data[,groupVar]<-as.factor(data[,groupVar])
   x <- model.matrix(formFixed,data=data)
@@ -24,7 +27,7 @@ smn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", time
   z<-model.matrix(formRandom,data=data)
   ind <-data[,groupVar]
   data$ind <-data[,groupVar]
-  m<-n_distinct(ind)
+  m<-nlevels(ind)#n_distinct(ind)
   if (m<=1) stop(paste(groupVar,"must have more than 1 level"))
   p<-ncol(x)
   q1<-ncol(z)
@@ -38,7 +41,8 @@ smn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", time
   #
   if (depStruct=="ARp" & !is.null(timeVar) & ((sum(!is.wholenumber(data[,timeVar]))>0)|(sum(data[,timeVar]<=0)>0))) stop("timeVar must contain positive integer numbers when using ARp dependency")
   if (depStruct=="ARp" & !is.null(timeVar)) if (min(data[,timeVar])!=1) warning("consider using a transformation such that timeVar starts at 1")
-  if (!(depStruct %in% c("CI","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: CI, ARp, CS, DEC or CAR1")
+  if (depStruct=="CI") depStruct = "UNC"
+  if (!(depStruct %in% c("UNC","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: UNC, ARp, CS, DEC or CAR1")
   #
   if (is.null(initialValues$beta)|is.null(initialValues$sigma2)|is.null(initialValues$D)) {
     lmefit = try(lme(formFixed,random=formula(paste('~',as.character(formRandom)[length(formRandom)],
@@ -92,7 +96,7 @@ smn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "CI", time
   if (distr=="sl") distrs="ss"
   if (distr=="cn") distrs="scn"
   ###
-  if (depStruct=="CI") obj.out <- EM.sim(formFixed,formRandom,data,groupVar,distr=distrs,beta1,sigmae,D1,
+  if (depStruct=="UNC") obj.out <- EM.sim(formFixed,formRandom,data,groupVar,distr=distrs,beta1,sigmae,D1,
                                          nu,lb,lu,precisao=tol,informa=calc.se,max.iter=max.iter,showiter=!quiet,showerroriter = (!quiet)&showCriterium)
   if (depStruct=="ARp") obj.out <- EM.AR(formFixed,formRandom,data,groupVar,pAR,timeVar,
                                          distr=distrs,beta1,sigmae,phiAR,D1,nu,lb,lu,
@@ -197,8 +201,8 @@ summary.SMN <- function(object,confint.level=.95,...){
     tab = (cbind(object$estimates$beta,object$std.error[1:p],
                  ICtab))
     rownames(tab) = names(object$theta[1:p])
-    colnames(tab) = c("Value","Std.error",paste0("IC ",confint.level*100,"% lower"),
-                      paste0("IC ",confint.level*100,"% upper"))
+    colnames(tab) = c("Value","Std.error",paste0("CI ",confint.level*100,"% lower"),
+                      paste0("CI ",confint.level*100,"% upper"))
   } else {
     tab = (rbind(object$estimates$beta))
     colnames(tab) = names(object$theta[1:p])
@@ -208,7 +212,7 @@ summary.SMN <- function(object,confint.level=.95,...){
   cat("\nDependency structure:", object$depStruct)
   cat("\n  Estimate(s):\n")
   covParam <- c(object$estimates$sigma2, object$estimates$phi)
-  if (object$depStruct=="CI") names(covParam) <- "sigma2"
+  if (object$depStruct=="UNC") names(covParam) <- "sigma2"
   else names(covParam) <- c("sigma2",paste0("phi",1:(length(covParam)-1)))
   print(covParam)
   cat('\nModel selection criteria:\n')
@@ -246,11 +250,12 @@ predict.SMN <- function(object,newData,...){
   vars_miss <- which(!(vars_used %in% names(newData)))
   if (length(vars_miss)>0) stop(paste(vars_used[vars_miss],"not found in newData"))
   depStruct <- object$depStruct
+  if (depStruct=="CI") depStruct = "UNC"
   if (any(!(dataPred[,groupVar] %in% dataFit[,groupVar]))) stop("subjects for which future values should be predicted must also be at fitting data")
   if (!is.factor(dataFit[,groupVar])) dataFit[,groupVar]<-as.factor(dataFit[,groupVar])
   if (!is.factor(dataPred[,groupVar])) dataPred[,groupVar]<-factor(dataPred[,groupVar],levels=levels(dataFit[,groupVar]))
   #
-  if (depStruct=="CI") obj.out <- predictf.sim(formFixed,formRandom,dataFit,dataPred,groupVar,distr=distrs,theta=object$theta)
+  if (depStruct=="UNC") obj.out <- predictf.sim(formFixed,formRandom,dataFit,dataPred,groupVar,distr=distrs,theta=object$theta)
   if (depStruct=="ARp") obj.out <- predictf.AR(formFixed,formRandom,dataFit,dataPred,groupVar,timeVar,distr=distrs,
                                                    pAR=length(object$estimates$phi),theta=object$theta)
   if (depStruct=="CS") obj.out <-predictf.CS(formFixed,formRandom,dataFit,dataPred,groupVar,distr=distrs,theta=object$theta)

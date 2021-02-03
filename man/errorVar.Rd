@@ -17,15 +17,14 @@ errorVar(times, object = NULL, sigma2 = NULL, depStruct = NULL,
   \item{times}{A vector containing the times for which the matrix should be calculated.}
   \item{object}{A smn.lmm or smsn.lmm object for which the variance should be extracted.}
   \item{sigma2}{Common variance parameter, such that \eqn{\Sigma = sigma2*R}. Only evaluated if object \code{is.null(object)}.}
-  \item{depStruct}{Dependence structure. \code{"CI"} for condicional independence, \code{"ARp"} for AR(p) -- p is \code{length(phi)}--, \code{"CS"} for compound symmetry, \code{"DEC"} for DEC, and \code{"CAR1"} for  continuous-time AR(1). Only evaluated if object \code{is.null(object)}.}
+  \item{depStruct}{Dependence structure. \code{"UNC"} for conditionally uncorrelated (\code{"CI"} is also accepted), \code{"ARp"} for AR(p) -- p is \code{length(phi)}--, \code{"CS"} for compound symmetry, \code{"DEC"} for DEC, and \code{"CAR1"} for  continuous-time AR(1). Only evaluated if object \code{is.null(object)}.}
   \item{phi}{Parameter vector indexing the dependence structure. Only evaluated if object \code{is.null(object)}.}
 }
 \value{
   Matrix of dimension \code{length(times)}.
 }
 \references{
-Schumacher, F.L., Lachos, V.H., and Matos, L.A. (2020+) "Scale mixture of skew-normal linear mixed models with within-subject serial dependence". Submitted.
-Preprint available at \url{https://arxiv.org/abs/2002.01040}.
+Schumacher, F. L., Lachos, V. H., and Matos, L. A. (2021). Scale mixture of skew-normal linear mixed models with within-subject serial dependence. Statistics in Medicine. \doi{10.1002/sim.8870}.
 }
 \author{
 Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
@@ -38,11 +37,11 @@ Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
 }
 \examples{
 \donttest{
-  fm1 <- smsn.lmm(distance ~ age + Sex, data = nlme::Orthodont, groupVar="Subject")
-  errorVar(times=1:4,fm1)
-  #}
-  errorVar(times=1:5,sigma2 = 1, depStruct = "ARp",phi = .5)
-  errorVar(times=1:5,sigma2 = 1, depStruct = "DEC",phi = c(.5,.8))
+fm1 <- smsn.lmm(distance ~ age + Sex, data = nlme::Orthodont, groupVar="Subject")
+errorVar(times=1:4,fm1)
+#}
+errorVar(times=1:5,sigma2 = 1, depStruct = "ARp",phi = .5)
+errorVar(times=1:5,sigma2 = 1, depStruct = "DEC",phi = c(.5,.8))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
