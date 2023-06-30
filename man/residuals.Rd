@@ -32,15 +32,13 @@ Modified residuals are useful when the variance is not finite, such as when \eqn
 Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
 }
 
-
 \seealso{
-\code{\link{smn.lmm}}, \code{\link{smsn.lmm}}, \code{\link{acfresid}},
-\code{\link{mahalDist}}, \code{\link{healy.plot}}
+\code{\link{smn.lmm}}, \code{\link{smsn.lmm}}, \code{\link{acfresid}}, \code{\link{mahalDist}}, \code{\link{healy.plot}}
 }
 \examples{
-fm1 <- smn.lmm(distance ~ age + Sex, data = nlme::Orthodont, groupVar = "Subject")
+fm1 = smn.lmm(distance ~ age+Sex, data=nlme::Orthodont, groupVar="Subject")
 residuals(fm1)
-plot(fm1, useweight = FALSE)
+plot(fm1, useweight=FALSE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

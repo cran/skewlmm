@@ -36,18 +36,16 @@ Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
 
 
 \seealso{
-\code{\link{ggplot}}, \code{\link{smn.lmm}}, \code{\link{smsn.lmm}}, \code{\link{fitted.SMN}},
-\code{\link{fitted.SMSN}},\code{\link{residuals.SMN}}, \code{\link{residuals.SMSN}}
+\code{\link{ggplot}}, \code{\link{smn.lmm}}, \code{\link{smsn.lmm}}, \code{\link{fitted.SMN}}, \code{\link{fitted.SMSN}}, \code{\link{residuals.SMN}}, \code{\link{residuals.SMSN}}
 }
 \examples{
-fm1 <- smn.lmm(distance ~ age + Sex, data = nlme::Orthodont,
-               groupVar="Subject", distr="t")
+fm1 = smn.lmm(distance ~ age+Sex, data=nlme::Orthodont,
+              groupVar="Subject", distr="t")
 plot(fm1)
-plot(fm1, useweight = FALSE)
+plot(fm1, useweight=FALSE)
 
 \donttest{library(ggplot2)
-plot(fm1) + ggtitle("t-LMM for orthodont data")
-  }
+plot(fm1) + ggtitle("t-LMM for orthodont data")}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

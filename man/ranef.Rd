@@ -1,18 +1,18 @@
 \name{ranef}
 \alias{ranef}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Extract random effects from smsn.lmm and smn.lmm objects
+\title{Extract random effects from smsn.lmm, smn.lmm and smn.clmm objects
 %%  ~~function to do ... ~~
 }
 \description{
-  It extracts random effects from smsn.lmm and smn.lmm objects.}
+  It extracts random effects from smsn.lmm, smn.lmm and smn.clmm objects.}
 
 \usage{
 ranef(object)
 }
 
 \arguments{
- \item{object}{an object inheriting from class \code{SMSN}, representing
+ \item{object}{An object inheriting from class \code{SMSN}, representing
    a fitted scale mixture skew-normal linear mixed model.}
    }
 
@@ -29,11 +29,11 @@ Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
 
 
 \seealso{
-\code{\link{smsn.lmm}}, \code{\link{smn.lmm}}, \code{\link{fitted.SMSN}}, \code{\link{fitted.SMN}}
+\code{\link{smsn.lmm}}, \code{\link{smn.lmm}}, \code{\link{smn.clmm}}, \code{\link{fitted.SMSN}}, \code{\link{fitted.SMN}}, \code{\link{fitted.SMNclmm}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-fm1 <- smn.lmm(distance ~ age + Sex, data = nlme::Orthodont, groupVar = "Subject")
+fm1 = smn.lmm(distance ~ age+Sex, data=nlme::Orthodont, groupVar="Subject")
 ranef(fm1)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

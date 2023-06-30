@@ -5,7 +5,7 @@
 %%  ~~function to do ... ~~
 }
 \description{
-This function calculates the empirical autocorrelation function for the within-subject residuals from a smn.lmm or smsn.lmm  fit. The autocorrelation values are calculated using pairs of residuals within-subjects. The autocorrelation function is useful for investigating serial correlation models for discrete-time data, preferably equally spaced.}
+This function calculates the empirical autocorrelation function for the within-subject residuals from a smn.lmm or smsn.lmm fit. The autocorrelation values are calculated using pairs of residuals within-subjects. The autocorrelation function is useful for investigating serial correlation models for discrete-time data, preferably equally spaced.}
 
 \usage{
 acfresid(object, maxLag, resLevel = "marginal", resType = "normalized",
@@ -42,13 +42,13 @@ Fernanda L. Schumacher, Larissa A. Matos and Victor H. Lachos
 \code{\link{smn.lmm}}, \code{\link{smsn.lmm}}, \code{\link{plot.acfresid}}
 }
 \examples{
-fm1 <- smn.lmm(distance ~ age + Sex, data = nlme::Orthodont, groupVar="Subject")
-acf1<- acfresid(fm1)
+fm1 = smn.lmm(distance ~ age+Sex, data=nlme::Orthodont, groupVar="Subject")
+acf1 = acfresid(fm1)
 acf1
 plot(acf1)
 
 ## computing simulated bands
-\donttest{acfCI<- acfresid(fm1, calcCI = TRUE)
+\donttest{acfCI = acfresid(fm1, calcCI=TRUE)
 plot(acfCI)
   }
 }
