@@ -33,7 +33,8 @@ smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "UNC", ti
   if (!is.null(timeVar) && sum(is.na(data[,timeVar]))) stop ("NAs not allowed")
   #
   if (distr=="ssl") distr<-"ss"
-  if (!(distr %in% c("sn","st","ss","scn"))) stop("Accepted distributions: sn, st, ssl, scn")
+  distr <- match.arg(distr,c("sn","st","ss","scn"))
+  #if (!(distr %in% c("sn","st","ss","scn"))) stop("Accepted distributions: sn, st, ssl, scn")
   if ((!is.null(control$lb))&&distr!="sn") if((distr=="st"&&(control$lb<=1))||(distr=="ss"&&(control$lb<=.5))) stop("Invalid lb")
   if (is.null(control$lb)&&distr!="sn") control$lb = ifelse(distr=="scn",rep(.01,2),ifelse(distr=="st",1.01,.51))
   if (is.null(control$lu)&&distr!="sn") control$lu = ifelse(distr=="scn",rep(.99,2),ifelse(distr=="st",100,50))
@@ -42,9 +43,11 @@ smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "UNC", ti
       ((sum(!is.wholenumber(data[,timeVar]))>0)||(sum(data[,timeVar]<=0)>0))) stop("timeVar must contain positive integer numbers when using ARp dependency")
   if (depStruct=="ARp" && !is.null(timeVar)) if (min(data[,timeVar])!=1) warning("consider using a transformation such that timeVar starts at 1")
   if (depStruct=="CI") depStruct = "UNC"
-  if (!(depStruct %in% c("UNC","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: UNC, ARp, CS, DEC or CAR1")
+  depStruct <- match.arg(depStruct,c("UNC","ARp","CS","DEC","CAR1"))
+  #if (!(depStruct %in% c("UNC","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: UNC, ARp, CS, DEC or CAR1")
   #
-  if (!(covRandom %in% c('pdSymm','pdDiag'))) stop("accepted covRandom: pdSymm or pdDiag")
+  covRandom <- match.arg(covRandom, c('pdSymm','pdDiag'))
+  #if (!(covRandom %in% c('pdSymm','pdDiag'))) stop("accepted covRandom: pdSymm or pdDiag")
   diagD <- covRandom=='pdDiag'
   if (q1==1) diagD=FALSE
   #
@@ -176,6 +179,7 @@ smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "UNC", ti
   obj.out$data <- data
   obj.out$formula$formFixed <- formFixed
   obj.out$formula$formRandom <- formRandom
+  obj.out$formula$groupVar <- groupVar
   obj.out$depStruct <- depStruct
   obj.out$covRandom <- covRandom
   if (distr=="ss") distr<-"ssl"
@@ -197,6 +201,8 @@ smsn.lmm <- function(data,formFixed,groupVar,formRandom=~1,depStruct = "UNC", ti
     fitted[seqi]<- xfiti%*%obj.out$estimates$beta + zfiti%*%obj.out$random.effects[i,]
   }
   obj.out$fitted <- fitted
+  names(obj.out$estimates$beta) <- colnames(x)
+  colnames(obj.out$estimates$D)<- row.names(obj.out$estimates$D) <- colnames(z)
 
   class(obj.out)<- c("SMSN","list")
   obj.out
@@ -307,7 +313,19 @@ print.SMSNsumm <- function(x,...){
 
 fitted.SMSN <- function(object,...) object$fitted
 ranef <- function(object) object$random.effects
-
+#
+ranef <- function(object, ...) UseMethod("ranef")
+nobs <- function(object, ...) UseMethod("nobs")
+fixef <- function(object, ...) UseMethod("fixef")
+coef <- function(object, ...) UseMethod("coef")
+#
+ranef.SMN <- ranef.SMSN <- ranef.SMNclmm <- function(object,...) object$random.effects
+logLik.SMN <- logLik.SMSN <- logLik.SMNclmm <- function(object,...) object$loglik
+fixef.SMN <- fixef.SMSN <- fixef.SMNclmm <- function(object,...) object$estimates$beta
+formula.SMN <- formula.SMSN <- formula.SMNclmm <- function(x,...) x$formula
+nobs.SMN <- nobs.SMSN <- nobs.SMNclmm <- function(object,...) object$N
+sigma.SMN <- sigma.SMSN <- sigma.SMNclmm <- function(object,...) sqrt(object$estimates$sigma2)
+#
 predict.SMSN <- function(object,newData,...){
   if (missing(newData)||is.null(newData)) return(fitted(object))
     #stop("newData must be a dataset containing the covariates, groupVar and timeVar (when used) from data that should be predicted")
@@ -348,7 +366,8 @@ errorVar<- function(times,object=NULL,sigma2=NULL,depStruct=NULL,phi=NULL) {
   if (is.null(depStruct)) depStruct<-object$depStruct
   if (depStruct=="CI") depStruct = "UNC"
   if (depStruct!="UNC" && is.null(object)&is.null(phi)) stop("object or phi must be provided")
-  if (!(depStruct %in% c("UNC","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: UNC, ARp, CS, DEC or CAR1")
+  depStruct <- match.arg(depStruct, c("UNC","ARp","CS","DEC","CAR1"))
+  #if (!(depStruct %in% c("UNC","ARp","CS","DEC","CAR1"))) stop("accepted depStruct: UNC, ARp, CS, DEC or CAR1")
   if (is.null(sigma2)) sigma2<-object$estimates$sigma2
   if (is.null(phi)&&depStruct!="UNC") phi<-object$estimates$phi
   if (depStruct=="ARp" && (any(!is.wholenumber(times))|any(times<=0))) stop("times must contain positive integer numbers when using ARp dependency")
@@ -376,7 +395,9 @@ rsmsn.lmm <- function(time1,x1,z1,sigma2,D1,beta,lambda,depStruct="UNC",phi=NULL
   Sig <- errorVar(time1,depStruct = depStruct,sigma2=sigma2,phi=phi)
   #
   if (distr=="ssl") distr<-"ss"
-  if (!(distr %in% c("sn","st","ss","scn"))) stop("Invalid distribution")
+  distr <- match.arg(distr, c("sn","st","ss","scn"))
+  #if (!(distr %in% c("sn","st","ss","scn"))) stop("Invalid distribution")
+  if (distr!="sn"&is.null(nu)) stop("nu must be provided")
   if (distr=="sn") {ui=1; c.=-sqrt(2/pi)}
   if (distr=="st") {ui=rgamma(1,nu/2,nu/2); c.=-sqrt(nu/pi)*gamma((nu-1)/2)/gamma(nu/2)}
   if (distr=="ss") {ui=rbeta(1,nu,1); c.=-sqrt(2/pi)*nu/(nu-.5)}
@@ -452,9 +473,9 @@ print.lmmLRT <- function(x, ...) {
     cat("chi-square statistics = ",x$statistic,"\n")
     cat("df = ",x$df,"\n")
     cat("p-value = ",x$p.value,"\n")
-    if (x$p.value<=x$level) cat("\nThe null hypothesis that both models represent the \ndata equally well is rejected at level ",x$level)
-    else cat("\nThe null hypothesis that both models represent the \ndata equally well is not rejected at level ",x$level)
-  } #else cat("LR test could not be performed")
+    if (x$p.value<=x$level) cat("\nThe null hypothesis that both models represent the \ndata equally well is rejected at level ",x$level,'\n')
+    else cat("\nThe null hypothesis that both models represent the \ndata equally well is not rejected at level ",x$level,'\n')
+  }
 }
 
 criteria = function(lobjects) {
@@ -471,7 +492,7 @@ lmmControl <- function(tol=1e-6,max.iter=300,calc.se=TRUE,
                        lb=NULL,lu=NULL,luDEC=10,
                        initialValues =list(beta=NULL,sigma2=NULL,D=NULL,
                                            lambda=NULL,phi=NULL,nu=NULL),
-                       quiet=FALSE,showCriterium=FALSE,algorithm="DAAREM",
+                       quiet=!interactive(),showCriterium=FALSE,algorithm="DAAREM",
                        parallelphi=NULL, parallelnu=NULL, ncores=NULL,
                        control.daarem=list()) {
   if ((!is.numeric(tol))||(length(tol)>1)) stop("tol must be a small number")
@@ -485,7 +506,7 @@ lmmControl <- function(tol=1e-6,max.iter=300,calc.se=TRUE,
   if (all(c("D","dsqrt") %in% names(initialValues))) initialValues$dsqrt<-NULL
   if (any(!(names(initialValues) %in% c("beta","sigma2","lambda","D","phi","nu")))) warning("initialValues must be a list with named elements beta, sigma2, D, phi and/or nu, elements with other names are ignored")
   if (!is.list(control.daarem)) stop("control.daarem must be a list")
-  if (!(algorithm%in%c("DAAREM","EM"))) stop("algorithm must be either 'EM' or 'DAAREM'")
+  if (!(algorithm%in%c("DAAREM","EM"))) algorithm = match.arg(algorithm, c("DAAREM","EM"))#stop("algorithm must be either 'EM' or 'DAAREM'")
   if (!is.logical(quiet)) stop("quiet must be TRUE or FALSE")
   if (!is.logical(showCriterium)) stop("showCriterium must be TRUE or FALSE")
   if (!is.null(parallelphi)) if (!is.logical(parallelphi)) stop("parallelphi must be TRUE or FALSE")
@@ -520,4 +541,60 @@ update.SMSN <- update.SMN <- function (object, ..., evaluate = TRUE){
   }
   if(evaluate) eval(call, parent.frame())
   else call
+}
+
+# adding coef function
+coef.SMSN <- coef.SMN <- coef.SMNclmm <- function(object, ...){
+  fef <- data.frame(matrix(object$estimates$beta, ncol=length(object$estimates$beta),
+                           nrow=object$n, byrow=T), check.names = FALSE)
+  names(fef) <- names(object$estimates$beta)
+  ref <- data.frame(skewlmm::ranef(object), check.names = FALSE)
+  ##
+  varsnames <- union(colnames(fef), colnames(ref))
+  fef[,setdiff(varsnames, colnames(fef))] <- 0
+  ref[,setdiff(varsnames, colnames(ref))] <- 0
+  ##
+  common_cols <- intersect(colnames(fef), colnames(ref))
+  coef <- data.frame(sapply(common_cols, function(col) fef[[col]] + ref[[col]]), check.names = FALSE)
+  class(coef) <- c("coef", "data.frame")
+  coef
+}
+
+# adding confint method
+confint.SMSN <- confint.SMN <- function(object, parm, level = 0.95, method = "asymptotic", ...){
+  if (is.null(object$std.error)) stop("A numerical error prevented calculation of standard errors. Please consider changing the model, the algorithm, or the initial values")
+  if (missing(parm)) {
+    parm = "all"
+  } else parm <- match.arg(parm, c("beta","all"))
+  method <- match.arg(method, c("asymptotic","bootstrap"))
+  if (level>=1|level<=0) stop("level must be a number between 0 and 1")
+  p <- length(object$estimates$beta)
+  if (method == "asymptotic") {
+    qIC <- qnorm(.5+level/2)
+    if (parm == "beta") {
+      ICtab <- cbind(object$estimates$beta-qIC*object$std.error[1:p],
+                     object$estimates$beta+qIC*object$std.error[1:p])
+      tab = (cbind(object$estimates$beta, ICtab))
+      rownames(tab) = names(object$theta[1:p])
+      colnames(tab) = c("Estimate",paste0("CI ",level*100,"% lower"),
+                        paste0("CI ",level*100,"% upper"))
+    }
+    else {
+      tab <- cbind(object$theta,
+                     object$theta-qIC*object$std.error,
+                     object$theta+qIC*object$std.error)
+      rownames(tab) = names(object$theta)
+      colnames(tab) = c("Estimate",paste0("CI ",level*100,"% lower"),
+                        paste0("CI ",level*100,"% upper"))
+    }
+  } else {
+    message("Computing bootstrap intervals...")
+    boot_sample <- boot_par(object, ...)
+    tab <- cbind(object$theta, t(boot_ci(boot_sample)))
+    colnames(tab)[1] <- "Estimate"
+    if (parm == "beta") {
+      tab <- tab[1:p,]
+    }
+  }
+  return(tab)
 }

@@ -1,7 +1,7 @@
 
 <!--  README.md is generated from README.Rmd. Please edit that file -->
 
-# skewlmm
+# skewlmm <a href="https://github.com/fernandalschumacher/skewlmm"><img src="man/figures/skewlmm_hex.png" align="right" height="138" alt="skewlmm GitHub link" /></a>
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/skewlmm)](https://cran.r-project.org/package=skewlmm)
 
@@ -23,7 +23,7 @@ dependence. *Statistics in Medicine*. DOI:
 You can install skewlmm from GitHub with:
 
 ``` r
-devtools::install_github("fernandalschumacher/skewlmm")
+remotes::install_github("fernandalschumacher/skewlmm")
 ```
 
 Or you can install the released version of skewlmm from
@@ -41,6 +41,14 @@ This is a basic example which shows you how to fit a SMSN-LMM:
 library(skewlmm)
 #> Loading required package: optimParallel
 #> Loading required package: parallel
+#> 
+#> Attaching package: 'skewlmm'
+#> The following object is masked from 'package:stats':
+#> 
+#>     nobs
+```
+
+``` r
 dat1 <- as.data.frame(nlme::Orthodont)
 fm1 <- smsn.lmm(dat1, formFixed = distance ~ age, formRandom = ~ age,
                 groupVar = "Subject", distr = "st",
@@ -80,6 +88,9 @@ summary(fm1)
 #> 
 #> Number of observations: 108 
 #> Number of groups: 27
+```
+
+``` r
 plot(fm1)
 ```
 

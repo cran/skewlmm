@@ -1,6 +1,8 @@
 residuals.SMSN<- function(object,level="conditional",type="response",...){
-  if (!(level %in% c("marginal","conditional"))) stop("Accepted levels: marginal, conditional")
-  if (!(type %in% c("response","modified","normalized"))) stop("Accepted types: response, normalized or modified")
+  level <- match.arg(level, c("marginal","conditional"))
+  type <- match.arg(type,c("response","modified","normalized"))
+  #if (!(level %in% c("marginal","conditional"))) stop("Accepted levels: marginal, conditional")
+  #if (!(type %in% c("response","modified","normalized"))) stop("Accepted types: response, normalized or modified")
   data <- object$data
   formFixed <- object$formula$formFixed
   formRandom <- object$formula$formRandom
@@ -428,7 +430,7 @@ plot.acfresid <-  function(x,...) {
   depStructp <- attr(x,'depStruct')
   if (depStructp=="ARp") depStructp <- paste0("AR(",attr(x,'pAR'),")")
   if (ncol(x)<=3) {
-    ggplot(data = x,aes_string(x = "lag",y="ACF"))+
+    ggplot(data = x,aes(x = .data$lag,y=.data$ACF))+
       theme_minimal()+geom_hline(aes(yintercept = 0))+
       geom_segment(mapping = aes(xend = lag, yend = 0))+ ylim(c(-1,1))+
       ggtitle(paste0(depStructp,'-',distrp,'-LMM')) +
@@ -439,13 +441,13 @@ plot.acfresid <-  function(x,...) {
                    c(lagmax+1,min(x$`CI.1`,na.rm=T),max(x$`CI.2`,na.rm=T)))
     datIC$lag <- datIC$lag-.5
     names(datIC) <- c("lag","inf","sup")
-    ggplot(x,aes_string(x = "lag",y="ACF")) +
+    ggplot(x,aes(x = .data$lag,y=.data$ACF)) +
     #ggplot(x,aes(x = lag,y=ACF)) +
     geom_hline(aes(yintercept = 0)) +
       coord_cartesian(xlim=c(0,max(x$lag)))+
-      geom_segment(mapping = aes_string(xend = "lag", yend = 0)) +
-      geom_step(aes_string(x="lag",y="inf"),data=datIC,color=4,linetype="dashed",na.rm=TRUE)+
-      geom_step(aes_string(x="lag",y="sup"),data=datIC,color=4,linetype="dashed",na.rm=TRUE)+
+      geom_segment(mapping = aes(xend = .data$lag, yend = 0)) +
+      geom_step(aes(x=.data$lag,y=.data$inf),data=datIC,color=4,linetype="dashed",na.rm=TRUE)+
+      geom_step(aes(x=.data$lag,y=.data$sup),data=datIC,color=4,linetype="dashed",na.rm=TRUE)+
       theme_minimal()+ ylim(c(-1,1))+
       ggtitle(paste0(depStructp,'-',distrp,'-LMM')) +
       theme(plot.title = element_text( face="italic", size=10))
@@ -460,12 +462,12 @@ plot.SMSN <- function(x,type="response",level="conditional",useweight=TRUE,alpha
   depStructp <- x$depStruct
   if (depStructp=="ARp") depStructp <- paste0("AR(",length(x$estimates$phi),")")
   if (useweight){
-    peso <-data.frame(weight=x$uhat)
+    peso <-data.frame(u_weight=x$uhat)
     peso$ind <- row.names(peso)
     peso <- left_join(x$data,peso,by='ind')
     peso$fitted <- fitted(x)
     peso$resid <- resid
-    ggplot(peso, aes_string(x="fitted",y="resid",color="weight"))+geom_point()+theme_minimal() +
+    ggplot(peso, aes(x=.data$fitted,y=.data$resid,color=.data$u_weight))+geom_point()+theme_minimal() +
       geom_hline(yintercept = 0,linetype="dashed") + ylab(attr(resid,"label")) +
       xlab("fitted values") +
       scale_color_continuous(high = "#132B43", low = "#56B1F7") +
@@ -520,30 +522,30 @@ plot.mahalDist <- function(x,fitobject,type,level=.99,nlabels=3,...){
   if (type!="total") {
     if (n_distinct(x$nj) ==1){
       if (type=="error") {
-        plotout<-ggplot(x,aes_string("index","md.error")) +
+        plotout<-ggplot(x,aes(.data$index,.data$md.error)) +
           geom_point(shape=1) + ylab("error distance")+
-          geom_text_repel(aes_string(label="ind"),data=subset(x,rank(x$md.error)>length(x$nj)-nlabels),
+          geom_text_repel(aes(label=.data$ind),data=subset(x,rank(x$md.error)>length(x$nj)-nlabels),
                     nudge_x=1.5,nudge_y = .5,size=3)
       } else {
-        plotout<-ggplot(x,aes_string("index","md.b")) +
+        plotout<-ggplot(x,aes(.data$index,.data$md.b)) +
           geom_point(shape=1) + ylab("R.E. distance")+
-          geom_text_repel(aes_string(label="ind"),data=subset(x,rank(x$md.b)>length(x$nj)-nlabels),
+          geom_text_repel(aes(label=.data$ind),data=subset(x,rank(x$md.b)>length(x$nj)-nlabels),
                     nudge_x=1.5,nudge_y = 0,size=3)
       }
     } else {
       njvec <- sort(unique(x$nj))
       if (type=="error") {
-        plotout<-ggplot(x,aes_string("nj","md.error")) +
+        plotout<-ggplot(x,aes(.data$nj,.data$md.error)) +
           geom_point(position = position_jitter(width = .3,height = 0),
                      shape=1) + ylab("error distance")+xlab("number of observations")+
-          geom_text(aes_string(label="ind"),data=subset(x,rank(x$md.error)>length(x$nj)-nlabels),
+          geom_text(aes(label=.data$ind),data=subset(x,rank(x$md.error)>length(x$nj)-nlabels),
                     nudge_x=0,nudge_y = .5,size=3)+
           scale_x_continuous(breaks=njvec)
       } else {
-        plotout<-ggplot(x,aes_string("nj","md.b")) +
+        plotout<-ggplot(x,aes(.data$nj,.data$md.b)) +
           geom_point(position = position_jitter(width = .3,height = 0),
                      shape=1) + ylab("R.E. distance")+xlab("number of observations")+
-          geom_text(aes_string(label="ind"),data=subset(x,rank(x$md.b)>length(x$nj)-nlabels),
+          geom_text(aes(label=.data$ind),data=subset(x,rank(x$md.b)>length(x$nj)-nlabels),
                     nudge_x=0,nudge_y = .5,size=3)+
           scale_x_continuous(breaks=njvec)
       }
@@ -576,9 +578,9 @@ plot.mahalDist <- function(x,fitobject,type,level=.99,nlabels=3,...){
         }
       }
 
-      plotout<-ggplot(x,aes_string("index","md")) +
+      plotout<-ggplot(x,aes(.data$index,.data$md)) +
         geom_point(shape=1) + ylab("Mahalanobis distance")+
-        geom_text_repel(aes_string(label="ind"),data=subset(x,rank(x$md)>length(x$nj)-nlabels),
+        geom_text_repel(aes(label=.data$ind),data=subset(x,rank(x$md)>length(x$nj)-nlabels),
                   nudge_x=1.5,nudge_y = .5,size=3) +
         geom_hline(yintercept = mdquantile,col=4,linetype="dashed")
       attr(plotout,"info") <- data.frame(nj= nj1,quantile=c(mdquantile))
@@ -606,12 +608,12 @@ plot.mahalDist <- function(x,fitobject,type,level=.99,nlabels=3,...){
       }
       datline <- data.frame(nj= c(njvec,max(njvec)+1),quantile=c(mdquantile,max(mdquantile)))
       datline$nj2<-datline$nj-.5
-      plotout<-ggplot(x,aes_string("nj","md")) +
+      plotout<-ggplot(x,aes(.data$nj,.data$md)) +
         geom_point(position = position_jitter(width = .25,height = 0),
                    shape=1) + ylab("Mahalanobis distance")+ xlab("number of observations")+
-        geom_text(aes_string(label="ind"),data=subset(x,rank(x$md)>length(x$nj)-nlabels),
+        geom_text(aes(label=.data$ind),data=subset(x,rank(x$md)>length(x$nj)-nlabels),
                   nudge_x=0,nudge_y = 0,size=3) +
-        geom_step(aes_string(x="nj2",y="quantile"),data=datline,color=4,linetype="dashed")+
+        geom_step(aes(x=.data$nj2,y=.data$quantile),data=datline,color=4,linetype="dashed")+
         scale_x_continuous(breaks=njvec)
       attr(plotout,"info") <- data.frame(nj= c(njvec),quantile=c(mdquantile))
     }
@@ -660,7 +662,15 @@ healy.plot <- function(object,dataPlus=NULL,dotsize=0.4,calcCI = FALSE,
   } else data <- object$data
   groupVar<-object$groupVar
   ind <-data[,groupVar]
-  data <- data[order(data[,object$groupVar]),]
+  timeVar <- object$timeVar
+  if (!is.null(timeVar)) {
+    time<-data[,timeVar]
+  } else{
+    time <- numeric(length = length(ind))
+    for (indi in levels(ind)) time[ind==indi] <- seq_len(sum(ind==indi))
+    #time<- flatten_int(tapply(ind,ind,function(x.) seq_along(x.)))
+  }
+  data <- data[order(ind, time),]
   njvec <- tapply(ind,ind,length)
   nj1 <- as.numeric(njvec[1])
   if (!all(njvec==nj1)) stop("for this plot all subjects must have the same number of observations, you can predict the missing values and enter the full dataset using the dataPlus argument")
@@ -704,14 +714,6 @@ healy.plot <- function(object,dataPlus=NULL,dotsize=0.4,calcCI = FALSE,
     theme(plot.title = element_text( face="italic", size=10))
   #
   if (calcCI){
-    timeVar <- object$timeVar
-    if (!is.null(timeVar)) {
-      time<-data[,timeVar]
-    } else{
-      time <- numeric(length = length(ind))
-      for (indi in levels(ind)) time[ind==indi] <- seq_len(sum(ind==indi))
-      #time<- flatten_int(tapply(ind,ind,function(x.) seq_along(x.)))
-    }
     x <- model.matrix(object$formula$formFixed,data=data)
     z<-model.matrix(object$formula$formRandom,data=data)
     p<-ncol(x)
@@ -1064,7 +1066,7 @@ boot_par <- function(object, B=100, seed = 123) {#method
     #time<- flatten_int(tapply(ind,ind,function(x.) seq_along(x.)))
   }
   #object$data$ind<-object$data[,object$groupVar]
-  plan(multisession)
+  plan(multisession,workers = availableCores()-1)
   a1<-suppressMessages(future_map(.x = seq_len(B),.f = gen_fit,
                   fit1=object,.options = furrr_options(seed = seed)))
   plan(sequential)
@@ -1076,7 +1078,22 @@ boot_par <- function(object, B=100, seed = 123) {#method
 boot_ci <- function(object, conf = 0.95){
   if (!inherits(object, "lmmBoot")) stop("object must inherit from class lmmBoot")
   if (nrow(object)==0) stop("boot_par did not return a valid sample")
-  objout<-apply(object,2,quantile,probs=c((1-conf)/2,1-(1-conf)/2))
+  objout<-apply(object,2,quantile,probs=c((1-conf)/2,1-(1-conf)/2), na.rm=T)
   attr(objout,'nsamples') <- nrow(object)
   return(objout)
+}
+
+weight_plot <- function(object) {
+  if (!(inherits(object, "SMSN")|(inherits(object, "SMN")))) stop("object must results from smsn.lmm or smn.lmm function")
+  distrp <- toupper(object$distr)
+  if (distrp=='NORM') distrp<-"N"
+  depStructp <- object$depStruct
+  if (depStructp=="ARp") depStructp <- paste0("AR(",length(object$estimates$phi),")")
+  dat_plot <- data.frame(x = mahalDist(object), y = object$uhat)
+  ggplot(data = dat_plot, mapping = aes(x = .data$x, y = .data$y)) +
+    geom_hline(yintercept = 1, linetype=2, color = 4)+
+    geom_point(shape = 1) + theme_minimal() +
+    ylab("weight") + xlab("Mahalanobis distance") +
+    ggtitle(paste0(depStructp,'-',distrp,'-LMM')) +
+    theme(plot.title = element_text( face="italic", size=10))
 }
